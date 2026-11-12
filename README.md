@@ -3,8 +3,7 @@
 Eine Home-Assistant-Integration (über [HACS](https://hacs.xyz) installierbar), die die Kontostände deiner Kinder aus dem
 Dienst **Taschengeld** als Sensoren bereitstellt. Sie **liest nur** – sie bucht nie, ändert keine Kinder und keine Regeln.
 
-> Status: Entwurf `0.1.0`, noch nicht veröffentlicht.
-> Screenshots (Einrichtung, Geräteseite, Dashboard-Karte) fehlen noch.
+> Version `1.0.0`. Screenshots (Einrichtung, Geräteseite, Dashboard-Karte) fehlen noch.
 
 ## Einrichtung in 5 Schritten
 
@@ -108,8 +107,7 @@ pytest
 ruff check .
 ```
 
-Das Icon (`custom_components/taschengeld/brand/`) ist vorläufig; Quelle: `docs/icon-muenze.svg`. Zum Austauschen
-`icon.png` (256×256) und `icon@2x.png` (512×512) ersetzen.
+Das Icon liegt in `custom_components/taschengeld/brand/` (`icon.png` 256×256, `icon@2x.png` 512×512).
 
 ---
 
@@ -118,7 +116,7 @@ Das Icon (`custom_components/taschengeld/brand/`) ist vorläufig; Quelle: `docs/
 A Home Assistant integration (installable via [HACS](https://hacs.xyz)) that exposes your children's balances from the
 **Taschengeld** service as sensors. It is **read-only**: it never books, and never changes children or rules.
 
-> Status: draft `0.1.0`, unpublished. Screenshots are still missing.
+> Version `1.0.0`. Screenshots are still missing.
 
 ## Setup in 5 steps
 
