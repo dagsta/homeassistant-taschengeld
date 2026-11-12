@@ -1,0 +1,89 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Taschengeld verbinden",
+        "description": "Erzeuge in der Taschengeld-App unter *Familie → Schnittstelle* (`/family/home-assistant`) ein Token. Es darf nur Kontostände lesen und lässt sich dort jederzeit widerrufen.",
+        "data": {
+          "url": "Adresse",
+          "token": "Token"
+        },
+        "data_description": {
+          "url": "Nur Adressen mit https:// sind erlaubt. Nur ändern, wenn du Taschengeld selbst hostest.",
+          "token": "Das von einem Elternteil erzeugte Token. Es enthält ein `|`, das ist normal."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Token nicht mehr gültig",
+        "description": "Das Token wurde widerrufen oder wird nicht mehr akzeptiert. Erzeuge in der Taschengeld-App unter *Familie → Schnittstelle* ein neues Token und trage es hier ein.",
+        "data": {
+          "token": "Token"
+        }
+      }
+    },
+    "error": {
+      "invalid_url": "Ungültige Adresse. Sie muss mit https:// beginnen.",
+      "invalid_auth": "Das Token ist ungültig oder wurde widerrufen.",
+      "no_permission": "Das Token darf keine Kontostände lesen (Kinder-Tokens funktionieren nicht).",
+      "cannot_connect": "Taschengeld ist nicht erreichbar.",
+      "rate_limited": "Zu viele Anfragen. Bitte versuche es in einigen Minuten erneut.",
+      "service_unavailable": "Taschengeld wird gewartet oder ist überlastet. Bitte versuche es später erneut.",
+      "unknown": "Unerwarteter Fehler. Details stehen im Home-Assistant-Protokoll."
+    },
+    "abort": {
+      "already_configured": "Diese Adresse ist bereits eingerichtet.",
+      "reauth_successful": "Das neue Token wurde gespeichert."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Taschengeld-Optionen",
+        "data": {
+          "scan_interval": "Abfrageintervall (Minuten)"
+        },
+        "data_description": {
+          "scan_interval": "Zwischen 30 und 1440 Minuten. Kontostände ändern sich selten, der Standard von 180 reicht völlig."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "balance": {
+        "name": "Kontostand"
+      },
+      "last_booking": {
+        "name": "Letzte Buchung"
+      },
+      "next_allowance_date": {
+        "name": "Nächstes Taschengeld (Datum)"
+      },
+      "next_allowance_amount": {
+        "name": "Nächster Betrag"
+      }
+    },
+    "binary_sensor": {
+      "allowance_due_today": {
+        "name": "Taschengeld heute fällig"
+      }
+    }
+  },
+  "exceptions": {
+    "invalid_auth": {
+      "message": "Das Taschengeld-Token ist ungültig oder wurde widerrufen."
+    },
+    "no_permission": {
+      "message": "Das Taschengeld-Token darf keine Kontostände lesen."
+    },
+    "rate_limited": {
+      "message": "Taschengeld meldet zu viele Anfragen; ich warte vor dem nächsten Versuch."
+    },
+    "service_unavailable": {
+      "message": "Taschengeld wird gewartet oder ist überlastet; ich warte vor dem nächsten Versuch."
+    },
+    "cannot_connect": {
+      "message": "Taschengeld ist nicht erreichbar."
+    }
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect Taschengeld",
+        "description": "Create a token in the Taschengeld app under *Family → Interface* (`/family/home-assistant`). It can only read balances and can be revoked there at any time.",
+        "data": {
+          "url": "Address",
+          "token": "Token"
+        },
+        "data_description": {
+          "url": "Only https:// addresses are allowed. Change this only if you host Taschengeld yourself.",
+          "token": "The token created by a parent. It contains a `|`, that is normal."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Token no longer valid",
+        "description": "The token was revoked or is no longer accepted. Create a new token in the Taschengeld app under *Family → Interface* and enter it here.",
+        "data": {
+          "token": "Token"
+        }
+      }
+    },
+    "error": {
+      "invalid_url": "Invalid address. It must start with https://.",
+      "invalid_auth": "The token is invalid or has been revoked.",
+      "no_permission": "The token is not allowed to read balances (child tokens do not work).",
+      "cannot_connect": "Taschengeld could not be reached.",
+      "rate_limited": "Too many requests. Please try again in a few minutes.",
+      "service_unavailable": "Taschengeld is under maintenance or overloaded. Please try again later.",
+      "unknown": "Unexpected error. See the Home Assistant log for details."
+    },
+    "abort": {
+      "already_configured": "This address is already set up.",
+      "reauth_successful": "The new token has been saved."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Taschengeld options",
+        "data": {
+          "scan_interval": "Update interval (minutes)"
+        },
+        "data_description": {
+          "scan_interval": "Between 30 and 1440 minutes. Balances rarely change, so the default of 180 is plenty."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "balance": {
+        "name": "Balance"
+      },
+      "last_booking": {
+        "name": "Last booking"
+      },
+      "next_allowance_date": {
+        "name": "Next allowance (date)"
+      },
+      "next_allowance_amount": {
+        "name": "Next allowance (amount)"
+      }
+    },
+    "binary_sensor": {
+      "allowance_due_today": {
+        "name": "Allowance due today"
+      }
+    }
+  },
+  "exceptions": {
+    "invalid_auth": {
+      "message": "The Taschengeld token is invalid or has been revoked."
+    },
+    "no_permission": {
+      "message": "The Taschengeld token is not allowed to read balances."
+    },
+    "rate_limited": {
+      "message": "Taschengeld reports too many requests; waiting before the next attempt."
+    },
+    "service_unavailable": {
+      "message": "Taschengeld is under maintenance or overloaded; waiting before the next attempt."
+    },
+    "cannot_connect": {
+      "message": "Taschengeld could not be reached."
+    }
+  }
+}
