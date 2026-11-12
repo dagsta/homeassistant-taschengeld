@@ -8,7 +8,6 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from . import device_identifier
 from .api import Child
-from .const import DOMAIN
 from .coordinator import TaschengeldCoordinator
 
 

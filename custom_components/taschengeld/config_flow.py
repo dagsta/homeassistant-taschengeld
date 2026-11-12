@@ -6,8 +6,6 @@ from collections.abc import Mapping
 import logging
 from typing import Any
 
-import voluptuous as vol
-
 from homeassistant.config_entries import (
     ConfigFlow,
     ConfigFlowResult,
@@ -24,6 +22,7 @@ from homeassistant.helpers.selector import (
     TextSelectorConfig,
     TextSelectorType,
 )
+import voluptuous as vol
 
 from .api import (
     TaschengeldAuthError,
@@ -79,7 +78,7 @@ class TaschengeldConfigFlow(ConfigFlow, domain=DOMAIN):
             return "rate_limited" if err.status == 429 else "service_unavailable"
         except TaschengeldConnectionError:
             return "cannot_connect"
-        except Exception:  # noqa: BLE001
+        except Exception:
             _LOGGER.exception("Unexpected error while validating the connection")
             return "unknown"
         return None

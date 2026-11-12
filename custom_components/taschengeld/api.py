@@ -9,9 +9,8 @@ import logging
 from typing import Any
 
 import aiohttp
-from yarl import URL
-
 from homeassistant.util import dt as dt_util
+from yarl import URL
 
 from .const import API_PATH, DEFAULT_CURRENCY, MAX_RETRY_AFTER, REQUEST_TIMEOUT
 
