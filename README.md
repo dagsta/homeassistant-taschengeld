@@ -15,6 +15,8 @@ Dienst **Taschengeld** als Sensoren bereitstellt. Sie **liest nur** – sie buch
 
 Das Token darf nur Kontostände lesen und lässt sich in der App jederzeit widerrufen. Kinder-Tokens funktionieren nicht.
 
+![Einrichtungsdialog mit Adresse und Token](docs/screenshots/einrichtung.png)
+
 ## Entitäten
 
 Pro Kind entsteht ein Gerät **„Taschengeld Mia“**:
@@ -133,6 +135,8 @@ A Home Assistant integration (installable via [HACS](https://hacs.xyz)) that exp
 3. Restart Home Assistant.
 4. **Settings → Devices & services → Add integration → Taschengeld**.
 5. Enter the address (default `https://taschengeld.ideenfaktor.de`, https only) and the token.
+
+![Setup dialog with address and token](docs/screenshots/einrichtung.png)
 
 ## Entities
 
