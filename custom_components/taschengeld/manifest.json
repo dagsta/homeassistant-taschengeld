@@ -3,10 +3,10 @@
   "name": "Taschengeld",
   "codeowners": ["@dagsta"],
   "config_flow": true,
-  "documentation": "https://github.com/dagsta/homeassistant-taschengeld-manager",
+  "documentation": "https://github.com/dagsta/homeassistant-taschengeld",
   "integration_type": "service",
   "iot_class": "cloud_polling",
-  "issue_tracker": "https://github.com/dagsta/homeassistant-taschengeld-manager/issues",
+  "issue_tracker": "https://github.com/dagsta/homeassistant-taschengeld/issues",
   "requirements": [],
   "version": "0.1.0"
 }
