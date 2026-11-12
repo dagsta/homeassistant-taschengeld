@@ -3,7 +3,7 @@
 Eine Home-Assistant-Integration (über [HACS](https://hacs.xyz) installierbar), die die Kontostände deiner Kinder aus dem
 Dienst **Taschengeld** als Sensoren bereitstellt. Sie **liest nur** – sie bucht nie, ändert keine Kinder und keine Regeln.
 
-> Version `1.0.0`. Screenshots (Einrichtung, Geräteseite, Dashboard-Karte) fehlen noch.
+> Version `1.0.0`.
 
 ## Einrichtung in 5 Schritten
 
@@ -28,6 +28,14 @@ Pro Kind entsteht ein Gerät **„Taschengeld Mia“**:
 | Taschengeld heute fällig | Binärsensor | an, solange das nächste Datum der heutige Tag ist |
 
 Kinder, die in Taschengeld dazukommen oder verschwinden, erscheinen bzw. verschwinden automatisch.
+
+Geräteseite (Dienst-Informationen und Sensoren):
+
+![Geräteseite mit den Sensoren eines Kindes](docs/screenshots/geraeteseite.png)
+
+Dashboard-Karte (Kachel mit dem Kontostand):
+
+![Kachel Kontostand Mia](docs/screenshots/dashboard-karte.png)
 „Heute fällig“ bleibt an, bis die nächste Abfrage das neue Datum liefert (spätestens nach dem eingestellten Intervall).
 
 ## Abfrageintervall
@@ -116,7 +124,7 @@ Das Icon liegt in `custom_components/taschengeld/brand/` (`icon.png` 256×256, `
 A Home Assistant integration (installable via [HACS](https://hacs.xyz)) that exposes your children's balances from the
 **Taschengeld** service as sensors. It is **read-only**: it never books, and never changes children or rules.
 
-> Version `1.0.0`. Screenshots are still missing.
+> Version `1.0.0`.
 
 ## Setup in 5 steps
 
@@ -131,6 +139,8 @@ A Home Assistant integration (installable via [HACS](https://hacs.xyz)) that exp
 One device per child ("Taschengeld Mia"): **Balance** (monetary, EUR, `total`), **Last booking** (monetary, attributes
 `note` and `booked_at`), **Next allowance (date)**, **Next allowance (amount)** and the binary sensor **Allowance due today**.
 Children that appear or disappear in Taschengeld are added or removed automatically.
+
+![Device page with the sensors of one child](docs/screenshots/geraeteseite.png)
 
 ## Update interval
 
