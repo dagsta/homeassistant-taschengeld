@@ -22,6 +22,7 @@ from pytest_homeassistant_custom_component.test_util.aiohttp import AiohttpClien
 from custom_components.taschengeld.const import (
     CONF_SCAN_INTERVAL_HOURS,
     CONF_SCAN_START,
+    CONF_START_OFFSET,
     CONF_TOKEN,
     DOMAIN,
 )
@@ -216,7 +217,7 @@ async def test_polls_at_configured_times(
     entry = MockConfigEntry(
         domain=DOMAIN,
         unique_id=URL,
-        data={"url": URL, CONF_TOKEN: TOKEN},
+        data={"url": URL, CONF_TOKEN: TOKEN, CONF_START_OFFSET: 0},
         options={CONF_SCAN_INTERVAL_HOURS: 8, CONF_SCAN_START: "06:30:00"},
     )
     aioclient_mock.get(API_URL, json=balances_payload(MIA))
@@ -229,6 +230,40 @@ async def test_polls_at_configured_times(
     assert aioclient_mock.call_count == 2
     await _refresh(hass, freezer, minutes=10)  # 14:35
     assert aioclient_mock.call_count == 3
+
+
+async def test_start_offset_shifts_the_slots(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker, freezer: FrozenDateTimeFactory
+) -> None:
+    """The fixed random offset moves the default 07:00 slot (here to 08:30)."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id=URL,
+        data={"url": URL, CONF_TOKEN: TOKEN, CONF_START_OFFSET: 90},
+    )
+    aioclient_mock.get(API_URL, json=balances_payload(MIA))
+    await _setup(hass, entry)  # 05:00
+    assert aioclient_mock.call_count == 1
+
+    await _refresh(hass, freezer, minutes=125)  # 07:05, plain slot passed
+    assert aioclient_mock.call_count == 1
+    await _refresh(hass, freezer, minutes=90)  # 08:35
+    assert aioclient_mock.call_count == 2
+
+
+async def test_existing_entry_gets_a_persistent_offset(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    """An entry created before the offset existed receives one and keeps it."""
+    entry = MockConfigEntry(domain=DOMAIN, unique_id=URL, data={"url": URL, CONF_TOKEN: TOKEN})
+    aioclient_mock.get(API_URL, json=balances_payload(MIA))
+    await _setup(hass, entry)
+    offset = entry.data[CONF_START_OFFSET]
+    assert 0 <= offset <= 180
+
+    assert await hass.config_entries.async_reload(entry.entry_id)
+    await hass.async_block_till_done()
+    assert entry.data[CONF_START_OFFSET] == offset
 
 
 async def test_manual_refresh_respects_minimum_gap(

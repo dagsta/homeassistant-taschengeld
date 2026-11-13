@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, time, timedelta
+from datetime import date, datetime, time, timedelta
 import logging
 
 from homeassistant.config_entries import ConfigEntry
@@ -22,10 +22,12 @@ from .api import (
 from .const import (
     CONF_SCAN_INTERVAL_HOURS,
     CONF_SCAN_START,
+    CONF_START_OFFSET,
     DEFAULT_INTERVAL_HOURS,
     DEFAULT_START_TIME,
     DOMAIN,
     INTERVAL_CHOICES,
+    MAX_START_OFFSET,
     MIN_REQUEST_GAP,
     RETRY_DELAY,
 )
@@ -37,6 +39,12 @@ type TaschengeldConfigEntry = ConfigEntry[TaschengeldCoordinator]
 # A slot closer than this is skipped, so a timer firing a moment early cannot
 # trigger a second request right away.
 SLOT_MARGIN = 60  # seconds
+
+
+def effective_start(start: time, offset_minutes: int) -> time:
+    """Return ``start`` shifted by the installation's fixed offset (wraps at midnight)."""
+    shifted = datetime.combine(date.min, start) + timedelta(minutes=offset_minutes)
+    return shifted.time()
 
 
 def next_slot_delay(
@@ -73,9 +81,12 @@ class TaschengeldCoordinator(DataUpdateCoordinator[BalancesData]):
         """Initialize the coordinator."""
         hours = entry.options.get(CONF_SCAN_INTERVAL_HOURS, DEFAULT_INTERVAL_HOURS)
         self._hours = int(hours) if hours in INTERVAL_CHOICES else DEFAULT_INTERVAL_HOURS
-        self._start = dt_util.parse_time(
+        start = dt_util.parse_time(
             entry.options.get(CONF_SCAN_START, DEFAULT_START_TIME)
         ) or dt_util.parse_time(DEFAULT_START_TIME)
+        offset = entry.data.get(CONF_START_OFFSET, 0)
+        offset = offset if isinstance(offset, int) and 0 <= offset <= MAX_START_OFFSET else 0
+        self._start = effective_start(start, offset)
         super().__init__(
             hass,
             _LOGGER,

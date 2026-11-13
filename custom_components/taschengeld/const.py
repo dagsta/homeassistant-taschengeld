@@ -18,6 +18,11 @@ INTERVAL_CHOICES: Final = (6, 8, 12, 24)
 DEFAULT_INTERVAL_HOURS: Final = 24
 DEFAULT_START_TIME: Final = "07:00:00"
 
+# Each installation gets a fixed random delay (0..180 min) added to the start
+# time, so that all installations do not hit the server at the same minute.
+CONF_START_OFFSET: Final = "start_offset_minutes"
+MAX_START_OFFSET: Final = 180
+
 # The service asks for at most one call every 30 minutes.
 MIN_REQUEST_GAP: Final = 1800  # seconds between two successful requests
 RETRY_DELAY: Final = 3600  # seconds before retrying after a failure

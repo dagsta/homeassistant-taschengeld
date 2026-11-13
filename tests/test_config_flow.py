@@ -13,6 +13,7 @@ from pytest_homeassistant_custom_component.test_util.aiohttp import AiohttpClien
 from custom_components.taschengeld.const import (
     CONF_SCAN_INTERVAL_HOURS,
     CONF_SCAN_START,
+    CONF_START_OFFSET,
     CONF_TOKEN,
     DOMAIN,
 )
@@ -37,7 +38,9 @@ async def test_user_flow_success(
     aioclient_mock.get(API_URL, json=balances_payload(MIA))
     result = await _start(hass, url=f"{URL}/")
     assert result["type"] is FlowResultType.CREATE_ENTRY
-    assert result["data"] == {"url": URL, CONF_TOKEN: TOKEN}
+    assert result["data"]["url"] == URL
+    assert result["data"][CONF_TOKEN] == TOKEN
+    assert 0 <= result["data"][CONF_START_OFFSET] <= 180
 
 
 async def test_user_flow_strips_bearer_prefix(

@@ -45,7 +45,7 @@
         },
         "data_description": {
           "scan_interval_hours": "How often balances are fetched. Fetching happens at fixed times of the day, counted from the start time.",
-          "scan_start_time": "First fetch of the day (your local time). Example: 06:00 with every 8 hours fetches at 06:00, 14:00 and 22:00."
+          "scan_start_time": "First fetch of the day (your local time). Example: 06:00 with every 8 hours fetches at 06:00, 14:00 and 22:00. To spare the server, each installation adds a fixed random delay of 0 to 180 minutes."
         }
       }
     }

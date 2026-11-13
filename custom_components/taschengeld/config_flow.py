@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 import logging
+import random
 from typing import Any
 
 from homeassistant.config_entries import (
@@ -36,12 +37,14 @@ from .api import (
 from .const import (
     CONF_SCAN_INTERVAL_HOURS,
     CONF_SCAN_START,
+    CONF_START_OFFSET,
     CONF_TOKEN,
     DEFAULT_INTERVAL_HOURS,
     DEFAULT_START_TIME,
     DEFAULT_URL,
     DOMAIN,
     INTERVAL_CHOICES,
+    MAX_START_OFFSET,
 )
 from .coordinator import TaschengeldConfigEntry
 
@@ -105,7 +108,11 @@ class TaschengeldConfigFlow(ConfigFlow, domain=DOMAIN):
                 else:
                     return self.async_create_entry(
                         title="Taschengeld",
-                        data={CONF_URL: url, CONF_TOKEN: token},
+                        data={
+                            CONF_URL: url,
+                            CONF_TOKEN: token,
+                            CONF_START_OFFSET: random.randint(0, MAX_START_OFFSET),
+                        },
                     )
 
         defaults = user_input or {CONF_URL: DEFAULT_URL}

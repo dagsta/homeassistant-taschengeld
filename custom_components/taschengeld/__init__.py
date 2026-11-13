@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
+import random
+
 from homeassistant.const import CONF_URL, Platform
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import TaschengeldClient
-from .const import CONF_TOKEN, DOMAIN
+from .const import CONF_START_OFFSET, CONF_TOKEN, DOMAIN, MAX_START_OFFSET
 from .coordinator import TaschengeldConfigEntry, TaschengeldCoordinator
 
 PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.BINARY_SENSOR]
@@ -21,6 +23,12 @@ def device_identifier(entry: TaschengeldConfigEntry, slug: str) -> tuple[str, st
 
 async def async_setup_entry(hass: HomeAssistant, entry: TaschengeldConfigEntry) -> bool:
     """Set up Taschengeld from a config entry."""
+    if CONF_START_OFFSET not in entry.data:
+        # Entry created before the offset existed: pick it once and keep it.
+        hass.config_entries.async_update_entry(
+            entry,
+            data={**entry.data, CONF_START_OFFSET: random.randint(0, MAX_START_OFFSET)},
+        )
     client = TaschengeldClient(
         async_get_clientsession(hass), entry.data[CONF_URL], entry.data[CONF_TOKEN]
     )

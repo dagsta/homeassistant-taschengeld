@@ -45,7 +45,7 @@
         },
         "data_description": {
           "scan_interval_hours": "Wie oft die Kontostände abgefragt werden. Die Abfrage erfolgt zu festen Uhrzeiten, gerechnet ab der Startzeit.",
-          "scan_start_time": "Erste Abfrage des Tages (deine Ortszeit). Beispiel: 06:00 bei alle 8 Stunden ruft um 06:00, 14:00 und 22:00 ab."
+          "scan_start_time": "Erste Abfrage des Tages (deine Ortszeit). Beispiel: 06:00 bei alle 8 Stunden ruft um 06:00, 14:00 und 22:00 ab. Zur Entlastung des Servers addiert jede Installation einen festen, zufälligen Versatz von 0 bis 180 Minuten."
         }
       }
     }

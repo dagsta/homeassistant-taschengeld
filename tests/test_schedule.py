@@ -7,7 +7,7 @@ from zoneinfo import ZoneInfo
 
 import pytest
 
-from custom_components.taschengeld.coordinator import next_slot_delay
+from custom_components.taschengeld.coordinator import effective_start, next_slot_delay
 
 UTC = ZoneInfo("UTC")
 
@@ -48,3 +48,17 @@ def test_slots_follow_local_time_across_dst() -> None:
     # next 07:00 local slot is 19 wall-clock hours away but 20 real hours.
     now = datetime(2026, 10, 24, 12, 0, tzinfo=berlin)
     assert next_slot_delay(now, time(7), 24) == pytest.approx(20 * 3600)
+
+
+@pytest.mark.parametrize(
+    ("start", "offset", "expected"),
+    [
+        (time(7), 0, time(7)),
+        (time(7), 90, time(8, 30)),
+        (time(7), 180, time(10)),
+        (time(23), 120, time(1)),  # wraps past midnight
+    ],
+)
+def test_effective_start(start: time, offset: int, expected: time) -> None:
+    """The offset is added to the configured start time."""
+    assert effective_start(start, offset) == expected

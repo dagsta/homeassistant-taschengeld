@@ -7,7 +7,7 @@ from typing import Any
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.taschengeld.const import CONF_TOKEN, DOMAIN
+from custom_components.taschengeld.const import CONF_START_OFFSET, CONF_TOKEN, DOMAIN
 
 URL = "https://taschengeld.example.test"
 API_URL = f"{URL}/api/ha/balances"
@@ -56,5 +56,5 @@ def config_entry() -> MockConfigEntry:
         domain=DOMAIN,
         title="Taschengeld",
         unique_id=URL,
-        data={"url": URL, CONF_TOKEN: TOKEN},
+        data={"url": URL, CONF_TOKEN: TOKEN, CONF_START_OFFSET: 0},
     )

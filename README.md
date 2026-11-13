@@ -48,6 +48,10 @@ Standard: **einmal täglich um 07:00 Uhr** (Ortszeit von Home Assistant). Unter 
 - **Startzeit:** die Uhrzeit der ersten Abfrage des Tages. Die weiteren Abfragen folgen im gewählten Abstand, jeden Tag zu denselben Uhrzeiten.
   Beispiel: Startzeit 06:00 und alle 8 Stunden ergibt 06:00, 14:00 und 22:00 Uhr.
 
+**Zufälliger Versatz:** Zur Entlastung des Servers addiert jede Installation einmalig einen festen, zufälligen Versatz von
+0 bis 180 Minuten auf die Startzeit. Bei Startzeit 07:00 liegt die tägliche Abfrage also irgendwo zwischen 07:00 und 10:00 Uhr,
+bei dir aber jeden Tag zur selben Uhrzeit. Der Wert wird bei der Einrichtung gewürfelt und bleibt danach gleich.
+
 Beim Start von Home Assistant und nach dem Speichern der Optionen wird einmal sofort abgefragt. Es wird ein einziger Aufruf für
 alle Kinder gemacht, und zwei Aufrufe liegen immer mindestens 30 Minuten auseinander (auch bei manuellem Aktualisieren).
 Schlägt eine Abfrage fehl, wird nach einer Stunde erneut versucht. Bei „zu viele Anfragen“ (429) oder Wartung (503) wartet die
@@ -157,7 +161,7 @@ Children that appear or disappear in Taschengeld are added or removed automatica
 
 Default: **once a day at 07:00** (Home Assistant's local time). In the options you choose an interval of 6, 8, 12 or 24 hours
 and a start time; polls then happen at the start time plus multiples of the interval, every day at the same clock times
-(for example 06:00 and every 8 hours: 06:00, 14:00, 22:00). One request serves all children, requests are at least 30 minutes
+(for example 06:00 and every 8 hours: 06:00, 14:00, 22:00). To spare the server, each installation adds a fixed random delay of 0 to 180 minutes to the start time, chosen once at setup. One request serves all children, requests are at least 30 minutes
 apart, a failed poll is retried after an hour, and on HTTP 429/503 the integration waits at least as long as the service's
 `Retry-After` header demands. On HTTP 401 Home Assistant asks for a new token (reauth) instead of removing the integration.
 
