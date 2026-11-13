@@ -9,6 +9,7 @@ from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr, entity_registry as er
 from homeassistant.setup import async_setup_component
+import pytest
 from pytest_homeassistant_custom_component.common import (
     MockConfigEntry,
     async_fire_time_changed,
@@ -18,9 +19,14 @@ from pytest_homeassistant_custom_component.components.diagnostics import (
 )
 from pytest_homeassistant_custom_component.test_util.aiohttp import AiohttpClientMocker
 
-from custom_components.taschengeld.const import DOMAIN
+from custom_components.taschengeld.const import (
+    CONF_SCAN_INTERVAL_HOURS,
+    CONF_SCAN_START,
+    CONF_TOKEN,
+    DOMAIN,
+)
 
-from .conftest import API_URL, BEN, MIA, TOKEN, balances_payload
+from .conftest import API_URL, BEN, MIA, TOKEN, URL, balances_payload
 
 
 async def _setup(hass: HomeAssistant, entry: MockConfigEntry) -> None:
@@ -29,7 +35,14 @@ async def _setup(hass: HomeAssistant, entry: MockConfigEntry) -> None:
     await hass.async_block_till_done()
 
 
-async def _refresh(hass: HomeAssistant, freezer: FrozenDateTimeFactory, minutes: int = 181) -> None:
+@pytest.fixture(autouse=True)
+async def fixed_time(hass: HomeAssistant, freezer: FrozenDateTimeFactory) -> None:
+    """Start every test at 05:00 UTC; the default daily slot is 07:00."""
+    freezer.move_to("2026-11-12 05:00:00+00:00")
+    await hass.config.async_set_time_zone("UTC")
+
+
+async def _refresh(hass: HomeAssistant, freezer: FrozenDateTimeFactory, minutes: int) -> None:
     freezer.tick(timedelta(minutes=minutes))
     async_fire_time_changed(hass)
     await hass.async_block_till_done()
@@ -82,7 +95,6 @@ async def test_due_today_binary_sensor(
 ) -> None:
     """The binary sensor is on exactly on the allowance date."""
     freezer.move_to("2026-11-14 12:00:00+00:00")
-    await hass.config.async_set_time_zone("UTC")
     aioclient_mock.get(API_URL, json=balances_payload(MIA))
     await _setup(hass, config_entry)
     assert hass.states.get("binary_sensor.taschengeld_mia_allowance_due_today").state == "on"
@@ -101,12 +113,12 @@ async def test_new_and_removed_child(
 
     aioclient_mock.clear_requests()
     aioclient_mock.get(API_URL, json=balances_payload(MIA, BEN))
-    await _refresh(hass, freezer)
+    await _refresh(hass, freezer, minutes=125)  # 07:05, after the 07:00 slot
     assert hass.states.get("sensor.taschengeld_ben_balance") is not None
 
     aioclient_mock.clear_requests()
     aioclient_mock.get(API_URL, json=balances_payload(BEN))
-    await _refresh(hass, freezer)
+    await _refresh(hass, freezer, minutes=24 * 60)  # next day's 07:00 slot
     devices = dr.async_entries_for_config_entry(dr.async_get(hass), config_entry.entry_id)
     assert {d.name for d in devices} == {"Taschengeld Ben"}
     assert er.async_get(hass).async_get("sensor.taschengeld_mia_balance") is None
@@ -126,7 +138,7 @@ async def test_unique_id_uses_slug_not_name(
 
     aioclient_mock.clear_requests()
     aioclient_mock.get(API_URL, json=balances_payload({**MIA, "name": "Mia-Lou"}))
-    await _refresh(hass, freezer)
+    await _refresh(hass, freezer, minutes=125)
     assert registry.async_get("sensor.taschengeld_mia_balance").unique_id == unique_id
     devices = dr.async_entries_for_config_entry(dr.async_get(hass), config_entry.entry_id)
     assert [d.name for d in devices] == ["Taschengeld Mia-Lou"]
@@ -164,13 +176,80 @@ async def test_rate_limit_waits_for_retry_after(
 
     aioclient_mock.clear_requests()
     aioclient_mock.get(API_URL, status=429, headers={"Retry-After": str(6 * 3600)})
-    await _refresh(hass, freezer)
+    await _refresh(hass, freezer, minutes=125)  # 07:05 slot -> 429
     assert aioclient_mock.call_count == 1
     assert hass.states.get("sensor.taschengeld_mia_balance").state == "unavailable"
 
-    # The normal interval (180 min) has passed twice, but Retry-After (6 h) has not.
-    await _refresh(hass, freezer, minutes=120)
+    # The normal 1 h retry delay has passed three times over, Retry-After (6 h) has not.
+    await _refresh(hass, freezer, minutes=180)
     assert aioclient_mock.call_count == 1
+    await _refresh(hass, freezer, minutes=190)
+    assert aioclient_mock.call_count == 2
+
+
+async def test_failure_is_retried_after_one_hour(
+    hass: HomeAssistant,
+    aioclient_mock: AiohttpClientMocker,
+    config_entry: MockConfigEntry,
+    freezer: FrozenDateTimeFactory,
+) -> None:
+    """A failed slot is retried after an hour, not only at the next slot."""
+    aioclient_mock.get(API_URL, json=balances_payload(MIA))
+    await _setup(hass, config_entry)
+
+    aioclient_mock.clear_requests()
+    aioclient_mock.get(API_URL, status=503)
+    await _refresh(hass, freezer, minutes=125)
+    assert aioclient_mock.call_count == 1
+
+    aioclient_mock.clear_requests()
+    aioclient_mock.get(API_URL, json=balances_payload(MIA))
+    await _refresh(hass, freezer, minutes=65)
+    assert aioclient_mock.call_count == 1
+    assert hass.states.get("sensor.taschengeld_mia_balance").state == "23.5"
+
+
+async def test_polls_at_configured_times(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker, freezer: FrozenDateTimeFactory
+) -> None:
+    """With 8 h from 06:30 the slots are 06:30, 14:30 and 22:30."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id=URL,
+        data={"url": URL, CONF_TOKEN: TOKEN},
+        options={CONF_SCAN_INTERVAL_HOURS: 8, CONF_SCAN_START: "06:30:00"},
+    )
+    aioclient_mock.get(API_URL, json=balances_payload(MIA))
+    await _setup(hass, entry)  # 05:00
+    assert aioclient_mock.call_count == 1
+
+    await _refresh(hass, freezer, minutes=95)  # 06:35
+    assert aioclient_mock.call_count == 2
+    await _refresh(hass, freezer, minutes=470)  # 14:25, slot not reached
+    assert aioclient_mock.call_count == 2
+    await _refresh(hass, freezer, minutes=10)  # 14:35
+    assert aioclient_mock.call_count == 3
+
+
+async def test_manual_refresh_respects_minimum_gap(
+    hass: HomeAssistant,
+    aioclient_mock: AiohttpClientMocker,
+    config_entry: MockConfigEntry,
+    freezer: FrozenDateTimeFactory,
+) -> None:
+    """Two requests are at least 30 minutes apart, however often HA asks."""
+    aioclient_mock.get(API_URL, json=balances_payload(MIA))
+    await _setup(hass, config_entry)
+    assert aioclient_mock.call_count == 1
+
+    coordinator = config_entry.runtime_data
+    freezer.tick(timedelta(minutes=10))
+    await coordinator.async_refresh()
+    assert aioclient_mock.call_count == 1
+
+    freezer.tick(timedelta(minutes=25))
+    await coordinator.async_refresh()
+    assert aioclient_mock.call_count == 2
 
 
 async def test_diagnostics_redacts_secrets(

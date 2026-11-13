@@ -10,7 +10,12 @@ import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 from pytest_homeassistant_custom_component.test_util.aiohttp import AiohttpClientMocker
 
-from custom_components.taschengeld.const import CONF_SCAN_INTERVAL, CONF_TOKEN, DOMAIN
+from custom_components.taschengeld.const import (
+    CONF_SCAN_INTERVAL_HOURS,
+    CONF_SCAN_START,
+    CONF_TOKEN,
+    DOMAIN,
+)
 
 from .conftest import API_URL, MIA, TOKEN, URL, balances_payload
 
@@ -121,36 +126,38 @@ async def test_reauth_flow(
     assert config_entry.data[CONF_TOKEN] == "NEUES_TOKEN"
 
 
+async def _setup_for_options(hass: HomeAssistant, entry: MockConfigEntry) -> None:
+    entry.add_to_hass(hass)
+    await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+
 async def test_options_flow(
     hass: HomeAssistant, aioclient_mock: AiohttpClientMocker, config_entry: MockConfigEntry
 ) -> None:
-    """The interval can be changed within its bounds."""
+    """Interval and start time can be changed."""
     aioclient_mock.get(API_URL, json=balances_payload(MIA))
-    config_entry.add_to_hass(hass)
-    await hass.config_entries.async_setup(config_entry.entry_id)
-    await hass.async_block_till_done()
+    await _setup_for_options(hass, config_entry)
 
     result = await hass.config_entries.options.async_init(config_entry.entry_id)
     assert result["type"] is FlowResultType.FORM
     result = await hass.config_entries.options.async_configure(
-        result["flow_id"], {CONF_SCAN_INTERVAL: 60}
+        result["flow_id"], {CONF_SCAN_INTERVAL_HOURS: "8", CONF_SCAN_START: "06:30:00"}
     )
     assert result["type"] is FlowResultType.CREATE_ENTRY
-    assert config_entry.options[CONF_SCAN_INTERVAL] == 60
+    assert config_entry.options == {CONF_SCAN_INTERVAL_HOURS: 8, CONF_SCAN_START: "06:30:00"}
 
 
-@pytest.mark.parametrize("value", [29, 1441])
-async def test_options_flow_out_of_range(
-    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker, config_entry: MockConfigEntry, value: int
+@pytest.mark.parametrize("value", ["1", "5", "7", "48"])
+async def test_options_flow_only_allows_listed_intervals(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker, config_entry: MockConfigEntry, value: str
 ) -> None:
-    """Values outside 30..1440 minutes are rejected."""
+    """Only 6, 8, 12 and 24 hours are accepted."""
     aioclient_mock.get(API_URL, json=balances_payload(MIA))
-    config_entry.add_to_hass(hass)
-    await hass.config_entries.async_setup(config_entry.entry_id)
-    await hass.async_block_till_done()
+    await _setup_for_options(hass, config_entry)
 
     result = await hass.config_entries.options.async_init(config_entry.entry_id)
     with pytest.raises(InvalidData):
         await hass.config_entries.options.async_configure(
-            result["flow_id"], {CONF_SCAN_INTERVAL: value}
+            result["flow_id"], {CONF_SCAN_INTERVAL_HOURS: value, CONF_SCAN_START: "07:00:00"}
         )

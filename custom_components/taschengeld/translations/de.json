@@ -40,10 +40,12 @@
       "init": {
         "title": "Taschengeld-Optionen",
         "data": {
-          "scan_interval": "Abfrageintervall (Minuten)"
+          "scan_interval_hours": "Abfrageintervall",
+          "scan_start_time": "Startzeit"
         },
         "data_description": {
-          "scan_interval": "Zwischen 30 und 1440 Minuten. Kontostände ändern sich selten, der Standard von 180 reicht völlig."
+          "scan_interval_hours": "Wie oft die Kontostände abgefragt werden. Die Abfrage erfolgt zu festen Uhrzeiten, gerechnet ab der Startzeit.",
+          "scan_start_time": "Erste Abfrage des Tages (deine Ortszeit). Beispiel: 06:00 bei alle 8 Stunden ruft um 06:00, 14:00 und 22:00 ab."
         }
       }
     }
@@ -84,6 +86,16 @@
     },
     "cannot_connect": {
       "message": "Taschengeld ist nicht erreichbar."
+    }
+  },
+  "selector": {
+    "scan_interval_hours": {
+      "options": {
+        "6": "Alle 6 Stunden",
+        "8": "Alle 8 Stunden",
+        "12": "Alle 12 Stunden",
+        "24": "Einmal täglich"
+      }
     }
   }
 }

@@ -40,10 +40,12 @@
       "init": {
         "title": "Taschengeld options",
         "data": {
-          "scan_interval": "Update interval (minutes)"
+          "scan_interval_hours": "Update interval",
+          "scan_start_time": "Start time"
         },
         "data_description": {
-          "scan_interval": "Between 30 and 1440 minutes. Balances rarely change, so the default of 180 is plenty."
+          "scan_interval_hours": "How often balances are fetched. Fetching happens at fixed times of the day, counted from the start time.",
+          "scan_start_time": "First fetch of the day (your local time). Example: 06:00 with every 8 hours fetches at 06:00, 14:00 and 22:00."
         }
       }
     }
@@ -84,6 +86,16 @@
     },
     "cannot_connect": {
       "message": "Taschengeld could not be reached."
+    }
+  },
+  "selector": {
+    "scan_interval_hours": {
+      "options": {
+        "6": "Every 6 hours",
+        "8": "Every 8 hours",
+        "12": "Every 12 hours",
+        "24": "Once a day"
+      }
     }
   }
 }

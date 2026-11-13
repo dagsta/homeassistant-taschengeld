@@ -38,13 +38,20 @@ Geräteseite (Dienst-Informationen und Sensoren):
 Dashboard-Karte (Kachel mit dem Kontostand):
 
 ![Kachel Kontostand Mia](docs/screenshots/dashboard-karte.png)
-„Heute fällig“ bleibt an, bis die nächste Abfrage das neue Datum liefert (spätestens nach dem eingestellten Intervall).
+„Heute fällig“ bleibt an, bis die nächste Abfrage das neue Datum liefert (spätestens bei der nächsten geplanten Abfrage).
 
-## Abfrageintervall
+## Abfragezeiten
 
-Standard: **180 Minuten**, einstellbar unter *Konfigurieren* von 30 bis 1440 Minuten. Es wird ein einziger Aufruf für alle
-Kinder gemacht. Bei „zu viele Anfragen“ (429) oder Wartung (503) wartet die Integration mindestens so lange, wie der Dienst
-über `Retry-After` verlangt.
+Standard: **einmal täglich um 07:00 Uhr** (Ortszeit von Home Assistant). Unter *Konfigurieren* stellst du ein:
+
+- **Abfrageintervall:** alle 6, 8, 12 Stunden oder einmal täglich (24 Stunden).
+- **Startzeit:** die Uhrzeit der ersten Abfrage des Tages. Die weiteren Abfragen folgen im gewählten Abstand, jeden Tag zu denselben Uhrzeiten.
+  Beispiel: Startzeit 06:00 und alle 8 Stunden ergibt 06:00, 14:00 und 22:00 Uhr.
+
+Beim Start von Home Assistant und nach dem Speichern der Optionen wird einmal sofort abgefragt. Es wird ein einziger Aufruf für
+alle Kinder gemacht, und zwei Aufrufe liegen immer mindestens 30 Minuten auseinander (auch bei manuellem Aktualisieren).
+Schlägt eine Abfrage fehl, wird nach einer Stunde erneut versucht. Bei „zu viele Anfragen“ (429) oder Wartung (503) wartet die
+Integration mindestens so lange, wie der Dienst über `Retry-After` verlangt.
 
 ## Beispiel-Dashboard
 
@@ -146,11 +153,13 @@ Children that appear or disappear in Taschengeld are added or removed automatica
 
 ![Device page with the sensors of one child](docs/screenshots/geraeteseite.png)
 
-## Update interval
+## Polling schedule
 
-Default 180 minutes, configurable from 30 to 1440. One request serves all children. On HTTP 429/503 the integration waits at
-least as long as the service's `Retry-After` header demands. On HTTP 401 Home Assistant asks for a new token (reauth) instead
-of removing the integration.
+Default: **once a day at 07:00** (Home Assistant's local time). In the options you choose an interval of 6, 8, 12 or 24 hours
+and a start time; polls then happen at the start time plus multiples of the interval, every day at the same clock times
+(for example 06:00 and every 8 hours: 06:00, 14:00, 22:00). One request serves all children, requests are at least 30 minutes
+apart, a failed poll is retried after an hour, and on HTTP 429/503 the integration waits at least as long as the service's
+`Retry-After` header demands. On HTTP 401 Home Assistant asks for a new token (reauth) instead of removing the integration.
 
 ## Troubleshooting & privacy
 

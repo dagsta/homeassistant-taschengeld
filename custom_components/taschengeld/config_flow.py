@@ -15,12 +15,13 @@ from homeassistant.const import CONF_URL
 from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.selector import (
-    NumberSelector,
-    NumberSelectorConfig,
-    NumberSelectorMode,
+    SelectSelector,
+    SelectSelectorConfig,
+    SelectSelectorMode,
     TextSelector,
     TextSelectorConfig,
     TextSelectorType,
+    TimeSelector,
 )
 import voluptuous as vol
 
@@ -33,13 +34,14 @@ from .api import (
     normalize_base_url,
 )
 from .const import (
-    CONF_SCAN_INTERVAL,
+    CONF_SCAN_INTERVAL_HOURS,
+    CONF_SCAN_START,
     CONF_TOKEN,
-    DEFAULT_SCAN_INTERVAL,
+    DEFAULT_INTERVAL_HOURS,
+    DEFAULT_START_TIME,
     DEFAULT_URL,
     DOMAIN,
-    MAX_SCAN_INTERVAL,
-    MIN_SCAN_INTERVAL,
+    INTERVAL_CHOICES,
 )
 from .coordinator import TaschengeldConfigEntry
 
@@ -154,32 +156,40 @@ class TaschengeldConfigFlow(ConfigFlow, domain=DOMAIN):
 
 
 class TaschengeldOptionsFlow(OptionsFlowWithReload):
-    """Let the user change the polling interval."""
+    """Let the user choose the polling interval and the daily start time."""
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Show the interval form."""
+        """Show the schedule form."""
         if user_input is not None:
             return self.async_create_entry(
-                data={CONF_SCAN_INTERVAL: int(user_input[CONF_SCAN_INTERVAL])}
+                data={
+                    CONF_SCAN_INTERVAL_HOURS: int(user_input[CONF_SCAN_INTERVAL_HOURS]),
+                    CONF_SCAN_START: user_input[CONF_SCAN_START],
+                }
             )
-        current = self.config_entry.options.get(
-            CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
-        )
+        options = self.config_entry.options
         return self.async_show_form(
             step_id="init",
             data_schema=vol.Schema(
                 {
-                    vol.Required(CONF_SCAN_INTERVAL, default=current): NumberSelector(
-                        NumberSelectorConfig(
-                            min=MIN_SCAN_INTERVAL,
-                            max=MAX_SCAN_INTERVAL,
-                            step=1,
-                            mode=NumberSelectorMode.BOX,
-                            unit_of_measurement="min",
+                    vol.Required(
+                        CONF_SCAN_INTERVAL_HOURS,
+                        default=str(
+                            options.get(CONF_SCAN_INTERVAL_HOURS, DEFAULT_INTERVAL_HOURS)
+                        ),
+                    ): SelectSelector(
+                        SelectSelectorConfig(
+                            options=[str(h) for h in INTERVAL_CHOICES],
+                            mode=SelectSelectorMode.DROPDOWN,
+                            translation_key=CONF_SCAN_INTERVAL_HOURS,
                         )
-                    )
+                    ),
+                    vol.Required(
+                        CONF_SCAN_START,
+                        default=options.get(CONF_SCAN_START, DEFAULT_START_TIME),
+                    ): TimeSelector(),
                 }
             ),
         )
